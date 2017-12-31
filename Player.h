@@ -1,23 +1,24 @@
 #ifndef PLAYER_H_INCLUDED
 #define PLAYER_H_INCLUDED
 
-class player{
+class Player{
 public:
     char type;
     int score;
     bool betray;
     bool haveChild;
-    player* parent;
+    Player* parent;
 
-    player(){
+    Player(){
         haveChild = false;
         parent = NULL;
     }
-    player(char type){
+    Player(char type){
         haveChild = false;
         parent = NULL;
         this->type = type;
     }
+
 };
 
 #endif // PLAYER_H_INCLUDED

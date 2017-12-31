@@ -7,22 +7,22 @@
 #include <vector>
 #include <algorithm>    // std::sort
 
-int indexof(std::vector<player>* players, player* A, const int tolPlayer){
+int indexof(std::vector<Player*>* players, Player* A, const int tolPlayer){
     for(int i = 0 ;i < tolPlayer; i++){
-        if (A == &(players->at(i)))
+        if (A == players->at(i))
             return i;
     }
     return -1;
 }
 
-int pickComponent(std::vector<player>* players, int a,const int tolPlayer){
+int pickComponent(std::vector<Player*>* players, int a,const int tolPlayer){
     int opponent = a;
     gameSetting config;
 
     // Calculate size of the pool
     int poolnum = tolPlayer;
     int parentConst = tolPlayer * config.relative_const;
-    player* trace = &players->at(a);
+    Player* trace = players->at(a);
     while(trace->parent != NULL){
         poolnum += parentConst;
         parentConst = parentConst / 2;
@@ -32,10 +32,10 @@ int pickComponent(std::vector<player>* players, int a,const int tolPlayer){
     // Build the pickup pool
     int pool[poolnum];
     parentConst = tolPlayer * config.relative_const;
-    trace = &players->at(a);
+    trace = players->at(a);
     int n = 0;
     for (; n < tolPlayer; n++) pool[n] = n;
-    while(trace->parent != NULL){
+    while(trace->parent){
         for (int i = 0; i < parentConst; i++){
             pool[n] = indexof(players, trace->parent, tolPlayer);
             n++;
@@ -53,11 +53,11 @@ int pickComponent(std::vector<player>* players, int a,const int tolPlayer){
     return opponent;
 }
 
-bool cmpPlayers(player A, player B){
-    return A.score > B.score;
+bool cmpPlayers(Player* A, Player* B){
+    return A->score > B->score;
 }
 
-void game(player* A, player* B, int rounds){
+void game(Player* A, Player* B, int rounds){
     scoreRule rule;
     for (int i = 0; i < rounds; i++){
         if (A->betray == true && B->betray == true){
@@ -82,34 +82,51 @@ void game(player* A, player* B, int rounds){
     }
 }
 
-void resetPlayers(std::vector<player>* players, int tolPlayer){
+void resetPlayers(std::vector<Player*>* players, int tolPlayer){
     for (int i = 0; i < tolPlayer; i++){
-        players->at(i).score = 0;
-        if (players->at(i).type == 'C')
-            players->at(i).betray = false;
-        else if (players->at(i).type == 'B')
-            players->at(i).betray = true;
+        players->at(i)->score = 0;
+        if (players->at(i)->type == 'C')
+            players->at(i)->betray = false;
+        else if (players->at(i)->type == 'B')
+            players->at(i)->betray = true;
     }
 }
 
-void naturalSelection(std::vector<player>* players, int numReplace, int tolPlayer){
+void clearPlayers(std::vector<Player*>* players){
+    int numSize = players->size();
+    for (int i = 0; i < numSize; i++)
+        delete(players->at(i));
+    players->clear();
+}
+
+void naturalSelection(std::vector<Player*>* players, int numReplace, int tolPlayer){
     std::sort(players->begin(), players->end(), cmpPlayers);
     //std::cout << "After sorting: " << std::endl;
-    //for (int i = 0; i < players->size(); i++) std::cout << "Player " << i << ": " << &players->at(i) << " " << players->at(i).score << " " << players->at(i).parent << " " << players->at(i).haveChild << std::endl;
+    //for (int i = 0; i < players->size(); i++) std::cout << "Player " << i << ": " << players->at(i) << " " << players->at(i)->score << " " << players->at(i)->parent << " " << players->at(i)->haveChild << std::endl;
 
     // Replicate
     for (int i = 0; i < numReplace; i++){
+        Player* delPlayer = players->at(players->size()-1);
+        // Delete the parent link
+        for(int j = 0; j < players->size()- 1; j++){
+            if (players->at(j)->parent == delPlayer)
+                players->at(j)->parent = NULL;
+        }
+
+        delete(delPlayer);
         players->pop_back();
     }
 
     for (int i = 0; i < numReplace; i++){
         //players[i] = players[players->size()-numReplace-menopause+i];
-        players->push_back(players->at(i));
-        players->at(players->size()-1).parent = &players->at(i);
-        players->at(i).haveChild = true;
+        Player *temp = new Player;
+        *temp = *players->at(i);
+        players->push_back(temp);
+        players->at(players->size()- 1)->parent = players->at(i);
+        players->at(i)->haveChild = true;
     }
     //std::cout << "After selection: " << std::endl;
-    //for (int i = 0; i < players->size(); i++) std::cout << "Player " << i << ": " << &players->at(i) << " " << players->at(i).score << " " << players->at(i).parent << " " << players->at(i).haveChild << std::endl;
+    //for (int i = 0; i < players->size(); i++) std::cout << "Player " << i << ": " << players->at(i) << " " << players->at(i)->score << " " << players->at(i)->parent << " " << players->at(i)->haveChild << std::endl;
 
 }
 

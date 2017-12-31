@@ -8,11 +8,11 @@ struct scoreRule{
     const int doubleBetray = 0;
 };
 struct gameSetting{
-    const int iter = 20;
+    const int generation = 20;
     const int rounds = 5;
     const int contact = 25;
     const int Replace = 10;
-    const int relative_const = 5;
+    const int relative_const = 3;
     const float missRate = 0.05;
 };
 
